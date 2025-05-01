@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+
+jobs:
+  go-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Check format
+        run: |
+          set -euo pipefail
+          test "$(go fmt ./... | tee /dev/stderr | wc -l)" -eq 0
+      - name: Run test
+        run: go test -v -cover ./...
