@@ -1,4 +1,4 @@
-module githugb.com/kofuk/go-structnbt
+module github.com/kofuk/go-structnbt
 
 go 1.24.2
 
