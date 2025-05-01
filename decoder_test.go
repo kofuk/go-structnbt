@@ -1,17 +1,18 @@
-package structnbt
+package structnbt_test
 
 import (
 	"bytes"
 	_ "embed"
 	"testing"
 
+	"github.com/kofuk/go-structnbt"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Decoder", func() {
 	DescribeTable("primitive types", func(data []byte, out any, checkFn func(value any) bool) {
-		decoder := NewDecoder(bytes.NewBuffer(data))
+		decoder := structnbt.NewDecoder(bytes.NewBuffer(data))
 		err := decoder.Decode(out)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(checkFn(out)).To(BeTrue(), "Result is not matched")
@@ -172,7 +173,7 @@ var _ = Describe("Decoder", func() {
 			0x0, // TAG_End
 		}
 
-		decoder := NewDecoder(bytes.NewBuffer(data))
+		decoder := structnbt.NewDecoder(bytes.NewBuffer(data))
 		var out s
 		err := decoder.Decode(&out)
 		Expect(err).NotTo(HaveOccurred())
@@ -187,7 +188,7 @@ var _ = Describe("Decoder", func() {
 	})
 
 	DescribeTable("should raise error when decoding invalid data", func(data []byte) {
-		decoder := NewDecoder(bytes.NewBuffer(data))
+		decoder := structnbt.NewDecoder(bytes.NewBuffer(data))
 		var a struct{}
 		err := decoder.Decode(&a)
 		Expect(err).To(HaveOccurred())
@@ -295,21 +296,21 @@ var _ = Describe("Decoder", func() {
 	)
 
 	It("should raise error when decoding into non-pointer data", func() {
-		decoder := NewDecoder(bytes.NewBuffer([]byte{0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}))
+		decoder := structnbt.NewDecoder(bytes.NewBuffer([]byte{0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}))
 		var out int32
 		err := decoder.Decode(out)
 		Expect(err).To(HaveOccurred())
 	})
 
 	It("should not raise error when using depth limit and limit is not reached", func() {
-		decoder := NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{0xA, 0x0, 0x0, 0x1, 0x0, 0x1, 'A', 0x1, 0x0}), 1)
+		decoder := structnbt.NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{0xA, 0x0, 0x0, 0x1, 0x0, 0x1, 'A', 0x1, 0x0}), 1)
 		var out struct{}
 		err := decoder.Decode(&out)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should raise error when using depth limit and limit is reached", func() {
-		decoder := NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{
+		decoder := structnbt.NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{
 			0xA, 0x0, 0x0, // TAG_Compound()
 			0xA, 0x0, 0x1, 'B', // TAG_Compound(B)
 			0x1, 0x0, 0x1, 'A', // TAG_Byte(A)
@@ -323,7 +324,7 @@ var _ = Describe("Decoder", func() {
 	})
 
 	It("should dispose list node in input data if input struct does not contain the key", func() {
-		decoder := NewDecoder(bytes.NewBuffer([]byte{
+		decoder := structnbt.NewDecoder(bytes.NewBuffer([]byte{
 			0xA, 0x0, 0x0, // TAG_Compound()
 			0x9, 0x0, 0x1, 'A', // TAG_List(A)
 			0x1,                // type=TAG_Byte
@@ -337,7 +338,7 @@ var _ = Describe("Decoder", func() {
 	})
 
 	It("should raise error when decoding struct to non-struct pointer", func() {
-		decoder := NewDecoder(bytes.NewBuffer([]byte{
+		decoder := structnbt.NewDecoder(bytes.NewBuffer([]byte{
 			0xA, 0x0, 0x0, // TAG_Compound()
 			0x0, // TAG_End
 		}))
@@ -347,7 +348,7 @@ var _ = Describe("Decoder", func() {
 	})
 
 	It("should correctly decode real level.dat", func() {
-		decoder := NewDecoder(bytes.NewBuffer(levelDat))
+		decoder := structnbt.NewDecoder(bytes.NewBuffer(levelDat))
 		var out struct {
 			Data struct {
 				WorldGenSettings struct {
@@ -378,23 +379,23 @@ func Test(t *testing.T) {
 func Fuzz_Decode(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		var a struct{}
-		dec := NewDecoder(bytes.NewBuffer(data))
+		dec := structnbt.NewDecoder(bytes.NewBuffer(data))
 		_ = dec.Decode(&a)
 
 		var b []int32
-		dec = NewDecoder(bytes.NewBuffer(data))
+		dec = structnbt.NewDecoder(bytes.NewBuffer(data))
 		_ = dec.Decode(&b)
 
 		var c []int
-		dec = NewDecoder(bytes.NewBuffer(data))
+		dec = structnbt.NewDecoder(bytes.NewBuffer(data))
 		_ = dec.Decode(&c)
 
 		var d string
-		dec = NewDecoder(bytes.NewBuffer(data))
+		dec = structnbt.NewDecoder(bytes.NewBuffer(data))
 		_ = dec.Decode(&d)
 
 		var e int
-		dec = NewDecoder(bytes.NewBuffer(data))
+		dec = structnbt.NewDecoder(bytes.NewBuffer(data))
 		_ = dec.Decode(&e)
 		// XXX  For now, We'll check that Decode don't panic.
 	})
