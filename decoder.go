@@ -10,22 +10,6 @@ import (
 	"unsafe"
 )
 
-const (
-	TagEnd byte = iota
-	TagByte
-	TagShort
-	TagInt
-	TagLong
-	TagFloat
-	TagDouble
-	TagByteArray
-	TagString
-	TagList
-	TagCompound
-	TagIntArray
-	TagLongArray
-)
-
 var (
 	ErrTypeMismatch = errors.New("type mismatch")
 )
@@ -61,6 +45,14 @@ func getStructFields(ty reflect.Type) map[string]int {
 		fields[name] = i
 	}
 	return fields
+}
+
+func (dec *Decoder) readTagType() (TagType, error) {
+	ty, err := dec.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	return TagType(ty), nil
 }
 
 func (dec *Decoder) readByte(v *reflect.Value, level int) error {
@@ -199,7 +191,7 @@ func (dec *Decoder) readString(v *reflect.Value, level int) error {
 }
 
 func (dec *Decoder) readList(v *reflect.Value, level int) error {
-	ty, err := dec.r.ReadByte()
+	ty, err := dec.readTagType()
 	if err != nil {
 		return err
 	}
@@ -261,7 +253,7 @@ func (dec *Decoder) readCompound(v *reflect.Value, level int) error {
 	}
 
 	for {
-		ty, err := dec.r.ReadByte()
+		ty, err := dec.readTagType()
 		if err != nil {
 			return err
 		}
@@ -356,7 +348,7 @@ func (dec *Decoder) readName() (string, error) {
 	return string(name), nil
 }
 
-func (dec *Decoder) getTypeReader(ty byte) (func(*reflect.Value, int) error, error) {
+func (dec *Decoder) getTypeReader(ty TagType) (func(*reflect.Value, int) error, error) {
 	switch ty {
 	case TagEnd:
 		return nil, errors.New("invalid TAG_End")
@@ -390,7 +382,7 @@ func (dec *Decoder) getTypeReader(ty byte) (func(*reflect.Value, int) error, err
 }
 
 func (dec *Decoder) decode(v reflect.Value, level int) error {
-	nbtTy, err := dec.r.ReadByte()
+	nbtTy, err := dec.readTagType()
 	if err != nil {
 		return err
 	}
