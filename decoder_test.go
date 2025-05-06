@@ -303,21 +303,21 @@ var _ = Describe("Decoder", func() {
 	})
 
 	It("should not raise error when using depth limit and limit is not reached", func() {
-		decoder := structnbt.NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{0xA, 0x0, 0x0, 0x1, 0x0, 0x1, 'A', 0x1, 0x0}), 1)
+		decoder := structnbt.NewDecoder(bytes.NewBuffer([]byte{0xA, 0x0, 0x0, 0x1, 0x0, 0x1, 'A', 0x1, 0x0}), structnbt.WithMaxDepth(1))
 		var out struct{}
 		err := decoder.Decode(&out)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should raise error when using depth limit and limit is reached", func() {
-		decoder := structnbt.NewDecoderWithDepthLimit(bytes.NewBuffer([]byte{
+		decoder := structnbt.NewDecoder(bytes.NewBuffer([]byte{
 			0xA, 0x0, 0x0, // TAG_Compound()
 			0xA, 0x0, 0x1, 'B', // TAG_Compound(B)
 			0x1, 0x0, 0x1, 'A', // TAG_Byte(A)
 			0x1, // 1
 			0x0, // TAG_End
 			0x0, // TAG_End
-		}), 1)
+		}), structnbt.WithMaxDepth(1))
 		var out struct{}
 		err := decoder.Decode(&out)
 		Expect(err).To(HaveOccurred())

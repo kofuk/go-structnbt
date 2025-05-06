@@ -1,4 +1,4 @@
-package structnbt
+package types
 
 //go:generate go tool stringer -type=TagType -output=tagtype_string.go
 
