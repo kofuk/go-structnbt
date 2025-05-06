@@ -1,6 +1,6 @@
 package structnbt
 
-//go:generate go run golang.org/x/tools/cmd/stringer@v0.32.0 -type=TagType -output=tagtype_string.go
+//go:generate go tool stringer -type=TagType -output=tagtype_string.go
 
 type TagType byte
 
