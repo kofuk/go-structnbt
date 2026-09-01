@@ -1,6 +1,6 @@
 module github.com/kofuk/go-structnbt
 
-go 1.26.5
+go 1.27.1
 
 require (
 	github.com/onsi/ginkgo/v2 v2.32.0
